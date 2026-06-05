@@ -8,6 +8,9 @@ import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import StudentManagement from "./pages/StudentManagement";
 import Attendance from "./pages/Attendance";
+import OnlineClassroom from "./pages/OnlineClassroom";
+import MoralAssessment from "./pages/MoralAssessment";
+import NewsManagement from "./pages/NewsManagement";
 import { useAuth } from "./_core/hooks/useAuth";
 
 function Router() {
@@ -32,6 +35,9 @@ function Router() {
         <Route path={"/dashboard"} component={AdminDashboard} />
         <Route path={"/students"} component={StudentManagement} />
         <Route path={"/attendance"} component={Attendance} />
+        <Route path={"/classroom"} component={OnlineClassroom} />
+        <Route path={"/moral"} component={MoralAssessment} />
+        <Route path={"/news"} component={NewsManagement} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>

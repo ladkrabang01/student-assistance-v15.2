@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, BookOpen, Award, Newspaper } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -31,6 +31,9 @@ const menuItems = [
   { icon: LayoutDashboard, label: "แดชบอร์ด", path: "/dashboard" },
   { icon: Users, label: "จัดการนักศึกษา", path: "/students" },
   { icon: Users, label: "เช็คชื่อพบกลุ่ม", path: "/attendance" },
+  { icon: BookOpen, label: "ห้องเรียนออนไลน์", path: "/classroom" },
+  { icon: Award, label: "ประเมินคุณธรรม", path: "/moral" },
+  { icon: Newspaper, label: "จัดการข่าวสาร", path: "/news" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
