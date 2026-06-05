@@ -1,4 +1,5 @@
 import { COOKIE_NAME } from "@shared/const";
+import bcrypt from "bcryptjs";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
@@ -18,6 +19,91 @@ export const appRouter = router({
   system: systemRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
+    
+    loginTeacher: publicProcedure
+      .input(z.object({ username: z.string(), password: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        const teacher = await db.getUserByUsername(input.username, "admin");
+        if (!teacher) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+        }
+        
+        const isValid = bcrypt.compareSync(input.password, teacher.passwordHash || "");
+        if (!isValid) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+        }
+        
+        return { success: true, userId: teacher.id };
+      }),
+    
+    loginStudent: publicProcedure
+      .input(z.object({ username: z.string(), password: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        const student = await db.getUserByUsername(input.username, "user");
+        if (!student) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+        }
+        
+        const isValid = bcrypt.compareSync(input.password, student.passwordHash || "");
+        if (!isValid) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+        }
+        
+        return { success: true, userId: student.id };
+      }),
+    
+    registerTeacher: publicProcedure
+      .input(z.object({ 
+        username: z.string(),
+        password: z.string(),
+        email: z.string().optional(),
+        name: z.string()
+      }))
+      .mutation(async ({ input }) => {
+        const existing = await db.getUserByUsername(input.username, "admin");
+        if (existing) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Username already exists" });
+        }
+        
+        const hashedPassword = bcrypt.hashSync(input.password, 10);
+        const result = await db.createUser({
+          openId: `teacher-${input.username}-${Date.now()}`,
+          name: input.name,
+          email: input.email,
+          loginMethod: "username",
+          passwordHash: hashedPassword,
+          role: "admin",
+        });
+        
+        return { success: true, userId: result.id };
+      }),
+    
+    registerStudent: publicProcedure
+      .input(z.object({ 
+        username: z.string(),
+        password: z.string(),
+        email: z.string().optional(),
+        name: z.string()
+      }))
+      .mutation(async ({ input }) => {
+        const existing = await db.getUserByUsername(input.username, "user");
+        if (existing) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Username already exists" });
+        }
+        
+        const hashedPassword = bcrypt.hashSync(input.password, 10);
+        const result = await db.createUser({
+          openId: `student-${input.username}-${Date.now()}`,
+          name: input.name,
+          email: input.email,
+          loginMethod: "username",
+          passwordHash: hashedPassword,
+          role: "user",
+        });
+        
+        return { success: true, userId: result.id };
+      }),
+    
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });

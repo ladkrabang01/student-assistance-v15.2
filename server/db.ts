@@ -126,6 +126,36 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function createUser(user: InsertUser) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(users).values(user);
+  const id = result[0].insertId;
+  const created = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, id as number))
+    .limit(1);
+  return created[0];
+}
+
+export async function getUserByUsername(username: string, role: "admin" | "user") {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
+  }
+
+  const result = await db
+    .select()
+    .from(users)
+    .where(and(eq(users.name, username), eq(users.role, role)))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
 // ============ STUDENTS ============
 
 export async function createStudent(student: InsertStudent): Promise<Student> {

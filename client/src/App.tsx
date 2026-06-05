@@ -12,6 +12,12 @@ import OnlineClassroom from "./pages/OnlineClassroom";
 import MoralAssessment from "./pages/MoralAssessment";
 import NewsManagement from "./pages/NewsManagement";
 import HomeVisit from "./pages/HomeVisit";
+import Landing from "./pages/Landing";
+import LoginTeacher from "./pages/LoginTeacher";
+import LoginStudent from "./pages/LoginStudent";
+import RegisterTeacher from "./pages/RegisterTeacher";
+import RegisterStudent from "./pages/RegisterStudent";
+import StudentDashboard from "./pages/StudentDashboard";
 import { useAuth } from "./_core/hooks/useAuth";
 
 function Router() {
@@ -21,9 +27,13 @@ function Router() {
   if (!isAuthenticated) {
     return (
       <Switch>
-        <Route path={"/"} component={Home} />
+        <Route path={"/ "} component={Landing} />
+        <Route path={"/login/teacher"} component={LoginTeacher} />
+        <Route path={"/login/student"} component={LoginStudent} />
+        <Route path={"/register/teacher"} component={RegisterTeacher} />
+        <Route path={"/register/student"} component={RegisterStudent} />
         <Route path={"/404"} component={NotFound} />
-        <Route component={NotFound} />
+        <Route component={Landing} />
       </Switch>
     );
   }
@@ -49,9 +59,10 @@ function Router() {
   // User (student) routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
+      <Route path={"/ "} component={StudentDashboard} />
+      <Route path={"/student"} component={StudentDashboard} />
       <Route path={"/404"} component={NotFound} />
-      <Route component={NotFound} />
+      <Route component={StudentDashboard} />
     </Switch>
   );
 }

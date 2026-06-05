@@ -82,21 +82,21 @@
 - [x] ป้องกันการเข้าถึงที่ไม่ได้รับอนุญาต
 
 ## UI/UX Design
-- [ ] ปรับแต่ง Theme Scandinavian (pale cool gray)
-- [ ] ตั้งค่า Typography (sans-serif bold black + light subtitle)
+- [x] ปรับแต่ง Theme Scandinavian (pale cool gray)
+- [x] ตั้งค่า Typography (sans-serif bold black + light subtitle)
 - [ ] เพิ่มรูปทรงเรขาคณิตนามธรรม (soft pastel blue + blush pink)
-- [ ] เพิ่ม Negative space ที่กว้างขวาง
-- [ ] ปรับแต่ง DashboardLayout สำหรับครู
-- [ ] สร้าง Navigation เหมาะสมสำหรับนักศึกษา
-- [ ] เพิ่ม Animation บนการ์ดข่าว
+- [x] เพิ่ม Negative space ที่กว้างขวาง
+- [x] ปรับแต่ง DashboardLayout สำหรับครู
+- [ ] สร้าง Navigation เหมาสมควรเหมาสมควรนักศึกษา
+- [x] เพิ่ม Animation บนการ์ดข่าว
 - [ ] ทดสอบ Responsive Design
 
 ## Testing & Deployment
-- [ ] เขียน Unit Tests สำหรับ API
+- [x] เขียน Unit Tests สำหรับ API (17 tests)
 - [ ] ทดสอบ CRUD Operations
 - [ ] ทดสอบ Authentication Flow
 - [ ] ทดสอบ Export Excel
 - [ ] ทดสอบ UI/UX บนอุปกรณ์ต่างๆ
 - [ ] ทดสอบ Performance
-- [ ] Deploy ให้พร้อมใช้งาน
-- [ ] สร้าง Checkpoint สำหรับ Publish
+- [x] Deploy ให้พร้อมใช้งาน (Live URL)
+- [x] สร้าง Checkpoint สำหรับ Publish (3 checkpoints)
