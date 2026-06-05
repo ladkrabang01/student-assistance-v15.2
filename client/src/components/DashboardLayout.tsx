@@ -28,8 +28,9 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+  { icon: LayoutDashboard, label: "แดชบอร์ด", path: "/dashboard" },
+  { icon: Users, label: "จัดการนักศึกษา", path: "/students" },
+  { icon: Users, label: "เช็คชื่อพบกลุ่ม", path: "/attendance" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
