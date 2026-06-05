@@ -11,6 +11,7 @@ import Attendance from "./pages/Attendance";
 import OnlineClassroom from "./pages/OnlineClassroom";
 import MoralAssessment from "./pages/MoralAssessment";
 import NewsManagement from "./pages/NewsManagement";
+import HomeVisit from "./pages/HomeVisit";
 import { useAuth } from "./_core/hooks/useAuth";
 
 function Router() {
@@ -38,6 +39,7 @@ function Router() {
         <Route path={"/classroom"} component={OnlineClassroom} />
         <Route path={"/moral"} component={MoralAssessment} />
         <Route path={"/news"} component={NewsManagement} />
+        <Route path={"/homevisit"} component={HomeVisit} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
