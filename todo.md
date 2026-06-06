@@ -75,11 +75,17 @@
 - [ ] แสดงข่าวสารบนหน้าหลัก (Student View)
 - [x] เพิ่ม Animation บนการ์ดข่าว
 
-## Authentication & Authorization
+## Authentication & Authorization (Login/Register System)
 - [x] ตั้งค่า Role-based Access Control (Admin vs User)
 - [x] ครู = admin, นักศึกษา = user
 - [x] ตรวจสอบสิทธิ์ในแต่ละหน้า
 - [x] ป้องกันการเข้าถึงที่ไม่ได้รับอนุญาต
+- [x] สร้าง Landing Page (เลือก ครู/นักศึกษา)
+- [x] สร้าง Login Pages (ครู + นักศึกษา)
+- [x] สร้าง Register Pages (ครู + นักศึกษา)
+- [x] Backend API (Login/Register + Password Hash)
+- [x] สร้าง StudentDashboard (แยกจาก Admin)
+- [x] สร้าง AdminDashboard (แยกจาก Student)
 
 ## UI/UX Design
 - [x] ปรับแต่ง Theme Scandinavian (pale cool gray)

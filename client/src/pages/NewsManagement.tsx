@@ -214,8 +214,8 @@ export default function NewsManagement() {
 
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
                       <span>
-                        {item.publishedAt
-                          ? new Date(item.publishedAt).toLocaleDateString("th-TH")
+                        {item.publishDate
+                          ? new Date(item.publishDate).toLocaleDateString("th-TH")
                           : "ยังไม่ได้เผยแพร่"}
                       </span>
                       {item.isActive ? (

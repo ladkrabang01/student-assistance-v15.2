@@ -27,8 +27,8 @@ const MORAL_DIMENSIONS = [
 
 export default function MoralAssessment() {
   const { data: students } = trpc.students.list.useQuery();
-  const createMutation = trpc.moralAssessments.create.useMutation();
-  const { data: assessments, refetch } = trpc.moralAssessments.getByStudent.useQuery(
+  const createMutation = trpc.moralAssessment.create.useMutation();
+  const { data: assessments, refetch } = trpc.moralAssessment.getByStudent.useQuery(
     { studentId: 0 },
     { enabled: false }
   );

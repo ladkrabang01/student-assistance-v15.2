@@ -167,14 +167,14 @@ export default function OnlineClassroom() {
                 >
                   <CardHeader>
                     <CardTitle className="text-lg">{subject.name}</CardTitle>
-                    <p className="text-sm text-gray-500">{subject.code}</p>
+                    <p className="text-sm text-gray-500">Subject ID: {subject.id}</p>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {subject.description && <p className="text-sm text-gray-600">{subject.description}</p>}
 
-                    {subject.youtubeUrl && (
+                    {subject.youtubeLink && (
                       <a
-                        href={subject.youtubeUrl}
+                        href={subject.youtubeLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"

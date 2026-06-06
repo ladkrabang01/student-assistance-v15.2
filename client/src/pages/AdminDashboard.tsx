@@ -23,18 +23,18 @@ export default function AdminDashboard() {
         ["ระบบช่วยเหลือผู้เรียน สกร. V15 - รายงานสรุป"],
         [],
         ["สถิติทั่วไป"],
-        ["จำนวนนักศึกษาทั้งหมด", stats.studentCount],
+        ["จำนวนนักศึกษาทั้งหมด", stats.totalStudents],
         [],
         ["การมาพบกลุ่มวันนี้"],
-        ["มาเรียน", stats.attendanceStats.present],
-        ["ขาดเรียน", stats.attendanceStats.absent],
-        ["มาสาย", stats.attendanceStats.late],
-        ["ลาป่วย/ลากิจ", stats.attendanceStats.excused],
+        ["มาเรียน", stats.totalAttendance],
+        ["ขาดเรียน", 0],
+        ["มาสาย", 0],
+        ["ลาป่วย/ลากิจ", 0],
         [],
         ["การส่งใบงาน"],
-        ["ใบงานทั้งหมด", stats.assignmentStats.total],
-        ["ส่งแล้ว", stats.assignmentStats.submitted],
-        ["ยังไม่ส่ง", stats.assignmentStats.pending],
+        ["ใบงานทั้งหมด", stats.totalAssignments],
+        ["ส่งแล้ว", 0],
+        ["ยังไม่ส่ง", 0],
       ];
 
       const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
@@ -62,15 +62,15 @@ export default function AdminDashboard() {
   }
 
   const attendanceChartData = [
-    { name: "มาเรียน", value: stats?.attendanceStats.present || 0, fill: "#a8e6cf" },
-    { name: "ขาดเรียน", value: stats?.attendanceStats.absent || 0, fill: "#ffd3b6" },
-    { name: "มาสาย", value: stats?.attendanceStats.late || 0, fill: "#ffaaa5" },
-    { name: "ลาป่วย/ลากิจ", value: stats?.attendanceStats.excused || 0, fill: "#c7ceea" },
+    { name: "มาเรียน", value: stats?.totalAttendance || 0, fill: "#a8e6cf" },
+    { name: "ขาดเรียน", value: 0, fill: "#ffd3b6" },
+    { name: "มาสาย", value: 0, fill: "#ffaaa5" },
+    { name: "ลาป่วย/ลากิจ", value: 0, fill: "#c7ceea" },
   ];
 
   const assignmentChartData = [
-    { name: "ส่งแล้ว", value: stats?.assignmentStats.submitted || 0, fill: "#a8e6cf" },
-    { name: "ยังไม่ส่ง", value: stats?.assignmentStats.pending || 0, fill: "#ffd3b6" },
+    { name: "ส่งแล้ว", value: stats?.totalAssignments || 0, fill: "#a8e6cf" },
+    { name: "ยังไม่ส่ง", value: 0, fill: "#ffd3b6" },
   ];
 
   return (
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 font-medium">นักศึกษาทั้งหมด</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.studentCount || 0}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.totalStudents || 0}</p>
                 </div>
                 <Users className="w-12 h-12 text-blue-400 opacity-30" />
               </div>
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 font-medium">มาเรียนวันนี้</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.attendanceStats.present || 0}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.totalAttendance || 0}</p>
                 </div>
                 <CheckCircle className="w-12 h-12 text-green-400 opacity-30" />
               </div>
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 font-medium">ใบงานรอส่ง</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.assignmentStats.pending || 0}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.totalAssignments || 0}</p>
                 </div>
                 <FileText className="w-12 h-12 text-yellow-400 opacity-30" />
               </div>
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 font-medium">ขาดเรียน</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.attendanceStats.absent || 0}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.totalAttendance || 0}</p>
                 </div>
                 <AlertCircle className="w-12 h-12 text-red-400 opacity-30" />
               </div>

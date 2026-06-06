@@ -208,7 +208,7 @@ export default function Attendance() {
                 <div>
                   <p className="text-sm text-gray-600 font-medium">มาเรียน</p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
-                    {todayAttendance?.filter((a) => a.status === "present").length || 0}
+                    {todayAttendance?.filter((a: any) => a.status === "present").length || 0}
                   </p>
                 </div>
                 <CheckCircle className="w-10 h-10 text-green-400 opacity-30" />
@@ -222,7 +222,7 @@ export default function Attendance() {
                 <div>
                   <p className="text-sm text-gray-600 font-medium">ขาดเรียน</p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
-                    {todayAttendance?.filter((a) => a.status === "absent").length || 0}
+                    {todayAttendance?.filter((a: any) => a.status === "absent").length || 0}
                   </p>
                 </div>
                 <XCircle className="w-10 h-10 text-red-400 opacity-30" />
@@ -236,7 +236,7 @@ export default function Attendance() {
                 <div>
                   <p className="text-sm text-gray-600 font-medium">มาสาย</p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
-                    {todayAttendance?.filter((a) => a.status === "late").length || 0}
+                    {todayAttendance?.filter((a: any) => a.status === "late").length || 0}
                   </p>
                 </div>
                 <Clock className="w-10 h-10 text-yellow-400 opacity-30" />
@@ -250,7 +250,7 @@ export default function Attendance() {
                 <div>
                   <p className="text-sm text-gray-600 font-medium">ลาป่วย/ลากิจ</p>
                   <p className="text-2xl font-bold text-gray-900 mt-2">
-                    {todayAttendance?.filter((a) => a.status === "excused").length || 0}
+                    {todayAttendance?.filter((a: any) => a.status === "excused").length || 0}
                   </p>
                 </div>
                 <CheckCircle className="w-10 h-10 text-blue-400 opacity-30" />
@@ -279,7 +279,7 @@ export default function Attendance() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {todayAttendance.map((record) => {
+                    {todayAttendance.map((record: any) => {
                       const student = students?.find((s) => s.id === record.studentId);
                       return (
                         <TableRow key={record.id} className="border-gray-100 hover:bg-gray-50">

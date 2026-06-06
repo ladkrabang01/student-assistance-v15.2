@@ -292,7 +292,7 @@ export default function StudentManagement() {
                         <TableCell>{student.name}</TableCell>
                         <TableCell>{student.level}</TableCell>
                         <TableCell>{student.phone || "-"}</TableCell>
-                        <TableCell>{student.parentName || "-"}</TableCell>
+                        <TableCell>{student.phone ? "ผู้ปกครอง" : "-"}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button

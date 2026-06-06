@@ -1,37 +1,26 @@
 import {
-  int,
-  mysqlEnum,
-  mysqlTable,
+  integer,
   text,
-  timestamp,
-  varchar,
-  decimal,
-  date,
-  boolean,
-  json,
-} from "drizzle-orm/mysql-core";
+  sqliteTable,
+  real,
+} from "drizzle-orm/sqlite-core";
 
 /**
  * Core user table backing auth flow.
  * Extend this file with additional tables as your product grows.
  * Columns use camelCase to match both database fields and generated types.
  */
-export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
-  id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  openId: text("openId").notNull().unique(),
   name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
+  email: text("email"),
+  loginMethod: text("loginMethod"),
   passwordHash: text("passwordHash"),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  role: text("role", { enum: ["user", "admin"] }).default("user").notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+  lastSignedIn: integer("lastSignedIn", { mode: "timestamp" }).notNull(),
 });
 
 export type User = typeof users.$inferSelect;
@@ -40,204 +29,154 @@ export type InsertUser = typeof users.$inferInsert;
 /**
  * Students table - เก็บข้อมูลนักศึกษา
  */
-export const students = mysqlTable("students", {
-  id: int("id").autoincrement().primaryKey(),
-  studentId: varchar("studentId", { length: 50 }).notNull().unique(), // รหัสนักศึกษา
-  name: text("name").notNull(), // ชื่อนักศึกษา
-  level: varchar("level", { length: 20 }).notNull(), // ชั้น (ประถม, ม.ต้น, ม.ปลาย)
-  pin: varchar("pin", { length: 10 }).notNull(), // PIN สำหรับเข้าระบบ
-  profileImage: text("profileImage"), // URL รูปโปรไฟล์
-  phone: varchar("phone", { length: 20 }), // เบอร์โทร
-  parentName: text("parentName"), // ชื่อผู้ปกครอง
-  parentPhone: varchar("parentPhone", { length: 20 }), // เบอร์โทรผู้ปกครอง
-  address: text("address"), // ที่อยู่
-  classTeacher: text("classTeacher"), // ครูประจำกลุ่ม
-  enrollmentDate: date("enrollmentDate"), // วันที่เข้าเรียน
-  status: mysqlEnum("status", ["active", "inactive"]).default("active"), // สถานะ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const students = sqliteTable("students", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  studentId: text("studentId").notNull().unique(),
+  name: text("name").notNull(),
+  level: text("level").notNull(),
+  pin: text("pin").notNull(),
+  profileImage: text("profileImage"),
+  phone: text("phone"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
 });
 
 export type Student = typeof students.$inferSelect;
 export type InsertStudent = typeof students.$inferInsert;
 
 /**
- * Attendance table - บันทึกการมาพบกลุ่ม
+ * Attendance table - เก็บข้อมูลการเช็คชื่อ
  */
-export const attendance = mysqlTable("attendance", {
-  id: int("id").autoincrement().primaryKey(),
-  studentId: int("studentId").notNull(), // FK to students
-  attendanceDate: date("attendanceDate").notNull(), // วันที่มาพบกลุ่ม
-  status: mysqlEnum("status", ["present", "absent", "late", "excused"]).notNull(), // สถานะการมา
-  notes: text("notes"), // หมายเหตุ
-  recordedBy: int("recordedBy"), // FK to users (ครูที่บันทึก)
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const attendance = sqliteTable("attendance", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  studentId: integer("studentId").notNull(),
+  attendanceDate: integer("attendanceDate", { mode: "timestamp" }).notNull(),
+  status: text("status", { enum: ["present", "absent", "late"] }).notNull(),
+  notes: text("notes"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
 
 export type Attendance = typeof attendance.$inferSelect;
 export type InsertAttendance = typeof attendance.$inferInsert;
 
 /**
- * Subjects table - วิชาเรียน
+ * Quiz Scores table - เก็บคะแนนควิซ
  */
-export const subjects = mysqlTable("subjects", {
-  id: int("id").autoincrement().primaryKey(),
-  name: text("name").notNull(), // ชื่อวิชา
-  code: varchar("code", { length: 20 }).notNull().unique(), // รหัสวิชา
-  description: text("description"), // คำอธิบาย
-  youtubeUrl: text("youtubeUrl"), // ลิงก์วิดีโอ YouTube
-  level: varchar("level", { length: 20 }), // ชั้น
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type Subject = typeof subjects.$inferSelect;
-export type InsertSubject = typeof subjects.$inferInsert;
-
-/**
- * Assignments table - ใบงาน
- */
-export const assignments = mysqlTable("assignments", {
-  id: int("id").autoincrement().primaryKey(),
-  subjectId: int("subjectId").notNull(), // FK to subjects
-  title: text("title").notNull(), // ชื่อใบงาน
-  description: text("description"), // คำอธิบายใบงาน
-  fileUrl: text("fileUrl"), // ลิงก์ไฟล์ใบงาน
-  dueDate: date("dueDate"), // วันกำหนดส่ง
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type Assignment = typeof assignments.$inferSelect;
-export type InsertAssignment = typeof assignments.$inferInsert;
-
-/**
- * Assignment Submissions table - การส่งใบงาน
- */
-export const assignmentSubmissions = mysqlTable("assignmentSubmissions", {
-  id: int("id").autoincrement().primaryKey(),
-  assignmentId: int("assignmentId").notNull(), // FK to assignments
-  studentId: int("studentId").notNull(), // FK to students
-  submissionUrl: text("submissionUrl"), // ลิงก์ไฟล์ที่ส่ง
-  submittedAt: timestamp("submittedAt"), // เวลาที่ส่ง
-  score: decimal("score", { precision: 5, scale: 2 }), // คะแนน
-  feedback: text("feedback"), // ความเห็น
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
-
-export type AssignmentSubmission = typeof assignmentSubmissions.$inferSelect;
-export type InsertAssignmentSubmission = typeof assignmentSubmissions.$inferInsert;
-
-/**
- * Quiz Scores table - คะแนนควิซ
- */
-export const quizScores = mysqlTable("quizScores", {
-  id: int("id").autoincrement().primaryKey(),
-  studentId: int("studentId").notNull(), // FK to students
-  quizName: text("quizName").notNull(), // ชื่อควิซ
-  score: decimal("score", { precision: 5, scale: 2 }).notNull(), // คะแนน
-  maxScore: decimal("maxScore", { precision: 5, scale: 2 }).notNull(), // คะแนนเต็ม
-  takenAt: timestamp("takenAt"), // เวลาที่ทำ
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const quizScores = sqliteTable("quiz_scores", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  studentId: integer("studentId").notNull(),
+  quizName: text("quizName").notNull(),
+  score: real("score").notNull(),
+  maxScore: real("maxScore").notNull(),
+  quizDate: integer("quizDate", { mode: "timestamp" }).notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
 
 export type QuizScore = typeof quizScores.$inferSelect;
 export type InsertQuizScore = typeof quizScores.$inferInsert;
 
 /**
- * Moral Assessment table - ประเมินคุณธรรม 11 ด้าน
- * Aspects: สะอาด, สุภาพ, กตัญญูกตเวที, ขยัน, ประหยัด, ซื่อสัตย์, สามัคคี, มีน้ำใจ, วินัย, รักชาติ ศาสน์ กษัตริย์, ประชาธิปไตย
+ * Assignments table - เก็บข้อมูลใบงาน
  */
-export const moralAssessments = mysqlTable("moralAssessments", {
-  id: int("id").autoincrement().primaryKey(),
-  studentId: int("studentId").notNull(), // FK to students
-  assessmentDate: date("assessmentDate").notNull(), // วันที่ประเมิน
-  cleanliness: int("cleanliness"), // สะอาด (1-5)
-  politeness: int("politeness"), // สุภาพ (1-5)
-  gratitude: int("gratitude"), // กตัญญูกตเวที (1-5)
-  diligence: int("diligence"), // ขยัน (1-5)
-  frugality: int("frugality"), // ประหยัด (1-5)
-  honesty: int("honesty"), // ซื่อสัตย์ (1-5)
-  unity: int("unity"), // สามัคคี (1-5)
-  compassion: int("compassion"), // มีน้ำใจ (1-5)
-  discipline: int("discipline"), // วินัย (1-5)
-  patriotism: int("patriotism"), // รักชาติ ศาสน์ กษัตริย์ (1-5)
-  democracy: int("democracy"), // ประชาธิปไตย (1-5)
-  notes: text("notes"), // หมายเหตุ
-  assessedBy: int("assessedBy"), // FK to users (ครูที่ประเมิน)
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const assignments = sqliteTable("assignments", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  subjectId: integer("subjectId").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  dueDate: integer("dueDate", { mode: "timestamp" }).notNull(),
+  fileUrl: text("fileUrl"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
 
-export type MoralAssessment = typeof moralAssessments.$inferSelect;
-export type InsertMoralAssessment = typeof moralAssessments.$inferInsert;
+export type Assignment = typeof assignments.$inferSelect;
+export type InsertAssignment = typeof assignments.$inferInsert;
 
 /**
- * Home Visits table - บันทึกเยี่ยมบ้าน
+ * Assignment Submissions table - เก็บการส่งใบงาน
  */
-export const homeVisits = mysqlTable("homeVisits", {
-  id: int("id").autoincrement().primaryKey(),
-  studentId: int("studentId").notNull(), // FK to students
-  visitDate: date("visitDate").notNull(), // วันที่เยี่ยม
-  latitude: decimal("latitude", { precision: 10, scale: 8 }), // ละติจูด
-  longitude: decimal("longitude", { precision: 11, scale: 8 }), // ลองจิจูด
-  fatherName: text("fatherName"), // ชื่อบิดา
-  fatherAge: int("fatherAge"), // อายุบิดา
-  fatherOccupation: text("fatherOccupation"), // อาชีพบิดา
-  motherName: text("motherName"), // ชื่อมารดา
-  motherAge: int("motherAge"), // อายุมารดา
-  motherOccupation: text("motherOccupation"), // อาชีพมารดา
-  homeType: text("homeType"), // ลักษณะที่อยู่อาศัย
-  positivebehaviors: text("positivebehaviors"), // พฤติกรรมที่ดี
-  improvementNeeded: text("improvementNeeded"), // พฤติกรรมที่ต้องปรับปรุง
-  parentConcerns: text("parentConcerns"), // เรื่องที่ผู้ปกครองห่วงใยมากที่สุด
-  cooperationPlan: text("cooperationPlan"), // แนวทางแก้ปัญหาร่วมกัน
-  parentFeedback: text("parentFeedback"), // ความรู้สึกผู้ปกครองต่อ สกร.
-  visitImages: json("visitImages"), // JSON array ของ URL รูปภาพ
-  visitedBy: int("visitedBy"), // FK to users (ครูที่เยี่ยม)
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const assignmentSubmissions = sqliteTable("assignment_submissions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  assignmentId: integer("assignmentId").notNull(),
+  studentId: integer("studentId").notNull(),
+  submissionDate: integer("submissionDate", { mode: "timestamp" }).notNull(),
+  fileUrl: text("fileUrl"),
+  status: text("status", { enum: ["submitted", "graded"] }).default("submitted").notNull(),
+  grade: real("grade"),
+  feedback: text("feedback"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+});
+
+export type AssignmentSubmission = typeof assignmentSubmissions.$inferSelect;
+export type InsertAssignmentSubmission = typeof assignmentSubmissions.$inferInsert;
+
+/**
+ * Moral Assessment table - ประเมินคุณธรรม 11 ด้าน
+ */
+export const moralAssessment = sqliteTable("moral_assessment", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  studentId: integer("studentId").notNull(),
+  cleanliness: integer("cleanliness"), // สะอาด
+  politeness: integer("politeness"), // สุภาพ
+  gratitude: integer("gratitude"), // กตัญญู
+  diligence: integer("diligence"), // ขยัน
+  frugality: integer("frugality"), // ประหยัด
+  honesty: integer("honesty"), // ซื่อสัตย์
+  unity: integer("unity"), // สามัคคี
+  compassion: integer("compassion"), // มีน้ำใจ
+  discipline: integer("discipline"), // วินัย
+  patriotism: integer("patriotism"), // รักชาติ
+  democracy: integer("democracy"), // ประชาธิปไตย
+  assessmentDate: integer("assessmentDate", { mode: "timestamp" }).notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
+});
+
+export type MoralAssessment = typeof moralAssessment.$inferSelect;
+export type InsertMoralAssessment = typeof moralAssessment.$inferInsert;
+
+/**
+ * Home Visits table - เก็บข้อมูลเยี่ยมบ้าน
+ */
+export const homeVisits = sqliteTable("home_visits", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  studentId: integer("studentId").notNull(),
+  visitDate: integer("visitDate", { mode: "timestamp" }).notNull(),
+  parentName: text("parentName"),
+  parentPhone: text("parentPhone"),
+  address: text("address"),
+  notes: text("notes"),
+  observations: text("observations"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
 
 export type HomeVisit = typeof homeVisits.$inferSelect;
 export type InsertHomeVisit = typeof homeVisits.$inferInsert;
 
 /**
- * News table - ข่าวสาร
+ * News table - เก็บข่าวสาร
  */
-export const news = mysqlTable("news", {
-  id: int("id").autoincrement().primaryKey(),
-  title: text("title").notNull(), // ชื่อข่าวสาร
-  content: text("content"), // เนื้อหา
-  imageUrl: text("imageUrl"), // ลิงก์รูปภาพ
-  detailUrl: text("detailUrl"), // ลิงก์รายละเอียด
-  publishedAt: timestamp("publishedAt"), // เวลาเผยแพร่
-  isActive: boolean("isActive").default(true), // สถานะการแสดง
-  createdBy: int("createdBy"), // FK to users (ผู้สร้าง)
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const news = sqliteTable("news", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  imageUrl: text("imageUrl"),
+  isActive: integer("isActive", { mode: "boolean" }).default(true).notNull(),
+  publishDate: integer("publishDate", { mode: "timestamp" }).notNull(),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
 
 export type News = typeof news.$inferSelect;
 export type InsertNews = typeof news.$inferInsert;
 
 /**
- * School Settings table - ตั้งค่าสถานศึกษา
+ * Subjects table - เก็บข้อมูลวิชา
  */
-export const schoolSettings = mysqlTable("schoolSettings", {
-  id: int("id").autoincrement().primaryKey(),
-  schoolName: text("schoolName").notNull(), // ชื่อสถานศึกษา
-  schoolCode: varchar("schoolCode", { length: 20 }), // รหัสสถานศึกษา
-  schoolLogo: text("schoolLogo"), // ลิงก์โลโก้
-  schoolAddress: text("schoolAddress"), // ที่อยู่สถานศึกษา
-  schoolPhone: varchar("schoolPhone", { length: 20 }), // เบอร์โทรสถานศึกษา
-  principalName: text("principalName"), // ชื่อผู้บริหาร
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const subjects = sqliteTable("subjects", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  description: text("description"),
+  youtubeLink: text("youtubeLink"),
+  createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
 });
 
-export type SchoolSettings = typeof schoolSettings.$inferSelect;
-export type InsertSchoolSettings = typeof schoolSettings.$inferInsert;
+export type Subject = typeof subjects.$inferSelect;
+export type InsertSubject = typeof subjects.$inferInsert;
