@@ -23,33 +23,55 @@ export const appRouter = router({
     loginTeacher: publicProcedure
       .input(z.object({ username: z.string(), password: z.string() }))
       .mutation(async ({ input, ctx }) => {
-        const teacher = await db.getUserByUsername(input.username);
-        if (!teacher) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+        try {
+          const teacher = await db.getUserByUsername(input.username);
+          if (!teacher) {
+            throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+          }
+          
+          const isValid = bcrypt.compareSync(input.password, teacher.passwordHash || "");
+          if (!isValid) {
+            throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+          }
+          
+          return { success: true, userId: teacher.id };
+        } catch (error) {
+          console.error("[loginTeacher Error]", error);
+          if (error instanceof TRPCError) {
+            throw error;
+          }
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error instanceof Error ? error.message : "Login failed",
+          });
         }
-        
-        const isValid = bcrypt.compareSync(input.password, teacher.passwordHash || "");
-        if (!isValid) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
-        }
-        
-        return { success: true, userId: teacher.id };
       }),
     
     loginStudent: publicProcedure
       .input(z.object({ username: z.string(), password: z.string() }))
       .mutation(async ({ input, ctx }) => {
-        const student = await db.getUserByUsername(input.username);
-        if (!student) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+        try {
+          const student = await db.getUserByUsername(input.username);
+          if (!student) {
+            throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+          }
+          
+          const isValid = bcrypt.compareSync(input.password, student.passwordHash || "");
+          if (!isValid) {
+            throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+          }
+          
+          return { success: true, userId: student.id };
+        } catch (error) {
+          console.error("[loginStudent Error]", error);
+          if (error instanceof TRPCError) {
+            throw error;
+          }
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error instanceof Error ? error.message : "Login failed",
+          });
         }
-        
-        const isValid = bcrypt.compareSync(input.password, student.passwordHash || "");
-        if (!isValid) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
-        }
-        
-        return { success: true, userId: student.id };
       }),
     
     registerTeacher: publicProcedure
@@ -60,25 +82,36 @@ export const appRouter = router({
         name: z.string()
       }))
       .mutation(async ({ input }) => {
-        const existing = await db.getUserByUsername(input.username);
-        if (existing) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Username already exists" });
+        try {
+          const existing = await db.getUserByUsername(input.username);
+          if (existing) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Username already exists" });
+          }
+          
+          const hashedPassword = bcrypt.hashSync(input.password, 10);
+          await db.createUser({
+            openId: `teacher-${input.username}-${Date.now()}`,
+            name: input.name,
+            email: input.email,
+            loginMethod: "username",
+            passwordHash: hashedPassword,
+            role: "admin",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            lastSignedIn: new Date(),
+          });
+          
+          return { success: true, userId: 0 };
+        } catch (error) {
+          console.error("[registerTeacher Error]", error);
+          if (error instanceof TRPCError) {
+            throw error;
+          }
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error instanceof Error ? error.message : "Failed to register teacher",
+          });
         }
-        
-        const hashedPassword = bcrypt.hashSync(input.password, 10);
-        await db.createUser({
-          openId: `teacher-${input.username}-${Date.now()}`,
-          name: input.name,
-          email: input.email,
-          loginMethod: "username",
-          passwordHash: hashedPassword,
-          role: "admin",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          lastSignedIn: new Date(),
-        });
-        
-        return { success: true, userId: 0 };
       }),
     
     registerStudent: publicProcedure
@@ -89,25 +122,36 @@ export const appRouter = router({
         name: z.string()
       }))
       .mutation(async ({ input }) => {
-        const existing = await db.getUserByUsername(input.username);
-        if (existing) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Username already exists" });
+        try {
+          const existing = await db.getUserByUsername(input.username);
+          if (existing) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Username already exists" });
+          }
+          
+          const hashedPassword = bcrypt.hashSync(input.password, 10);
+          await db.createUser({
+            openId: `student-${input.username}-${Date.now()}`,
+            name: input.name,
+            email: input.email,
+            loginMethod: "username",
+            passwordHash: hashedPassword,
+            role: "user",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            lastSignedIn: new Date(),
+          });
+          
+          return { success: true, userId: 0 };
+        } catch (error) {
+          console.error("[registerStudent Error]", error);
+          if (error instanceof TRPCError) {
+            throw error;
+          }
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error instanceof Error ? error.message : "Failed to register student",
+          });
         }
-        
-        const hashedPassword = bcrypt.hashSync(input.password, 10);
-        await db.createUser({
-          openId: `student-${input.username}-${Date.now()}`,
-          name: input.name,
-          email: input.email,
-          loginMethod: "username",
-          passwordHash: hashedPassword,
-          role: "user",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          lastSignedIn: new Date(),
-        });
-        
-        return { success: true, userId: 0 };
       }),
     
     logout: publicProcedure.mutation(({ ctx }) => {

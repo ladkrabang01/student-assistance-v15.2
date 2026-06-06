@@ -30,8 +30,20 @@ export default function LoginStudent() {
       await loginMutation.mutateAsync({ username, password });
       toast.success("เข้าสู่ระบบสำเร็จ");
       setLocation("/student");
-    } catch (error) {
-      toast.error("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+    } catch (error: any) {
+      console.error("[LoginStudent Error]", error);
+      
+      let errorMessage = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+      
+      if (error?.data?.code === "UNAUTHORIZED") {
+        errorMessage = error.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+      } else if (error?.data?.code === "INTERNAL_SERVER_ERROR") {
+        errorMessage = "เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

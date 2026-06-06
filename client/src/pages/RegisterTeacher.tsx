@@ -59,7 +59,19 @@ export default function RegisterTeacher() {
       toast.success("สมัครสมาชิกสำเร็จ ไปเข้าสู่ระบบ");
       setLocation("/login/teacher");
     } catch (error: any) {
-      toast.error(error.message || "เกิดข้อผิดพลาด");
+      console.error("[RegisterTeacher Error]", error);
+      
+      let errorMessage = "เกิดข้อผิดพลาด";
+      
+      if (error?.data?.code === "BAD_REQUEST") {
+        errorMessage = error.message || "ชื่อผู้ใช้นี้มีผู้ใช้แล้ว";
+      } else if (error?.data?.code === "INTERNAL_SERVER_ERROR") {
+        errorMessage = "เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
