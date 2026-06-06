@@ -7,6 +7,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { ENV, isCriticalEnvMissing } from "./env";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -33,6 +34,39 @@ export function createApp() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  
+  // Validation middleware - check critical env vars before processing requests
+  app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+      if (isCriticalEnvMissing()) {
+        const missing = [];
+        if (!ENV.appId) missing.push("VITE_APP_ID");
+        if (!ENV.cookieSecret) missing.push("JWT_SECRET");
+        if (!ENV.databaseUrl) missing.push("DATABASE_URL");
+        if (!ENV.oAuthServerUrl) missing.push("OAUTH_SERVER_URL");
+        
+        console.error("[Validation] Missing critical environment variables:", missing);
+        
+        return res.status(500).json({
+          error: {
+            message: "Server configuration error",
+            details: `Missing environment variables: ${missing.join(", ")}`,
+            status: 500,
+          },
+        });
+      }
+      next();
+    } catch (error) {
+      console.error("[Validation Middleware Error]", error);
+      res.status(500).json({
+        error: {
+          message: "Server validation error",
+          status: 500,
+        },
+      });
+    }
+  });
+  
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   
@@ -55,18 +89,44 @@ export function createApp() {
   
   // Global error handler - ensure all errors return JSON
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error("[Server Error]", err);
+    console.error("[Global Error Handler]", {
+      message: err.message,
+      code: err.code,
+      status: err.status,
+      stack: err.stack?.split("\n")[0],
+    });
     
     // Don't override response if headers already sent
     if (res.headersSent) {
+      console.warn("[Global Error Handler] Headers already sent, cannot send error response");
       return next(err);
     }
     
-    // Return JSON error response
-    res.status(err.status || 500).json({
+    // Determine status code
+    let statusCode = 500;
+    if (err.status) statusCode = err.status;
+    else if (err.statusCode) statusCode = err.statusCode;
+    else if (err.code === "ECONNREFUSED") statusCode = 503; // Service unavailable
+    else if (err.code === "ENOTFOUND") statusCode = 503; // Service unavailable
+    
+    // Return JSON error response - ALWAYS JSON, never plain text
+    res.status(statusCode).json({
       error: {
         message: err.message || "Internal Server Error",
-        status: err.status || 500,
+        code: err.code || "INTERNAL_ERROR",
+        status: statusCode,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  });
+  
+  // 404 handler - also returns JSON
+  app.use((req: express.Request, res: express.Response) => {
+    res.status(404).json({
+      error: {
+        message: "Not Found",
+        path: req.path,
+        status: 404,
       },
     });
   });

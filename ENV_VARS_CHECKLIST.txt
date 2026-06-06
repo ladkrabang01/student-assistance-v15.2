@@ -1,0 +1,187 @@
+═══════════════════════════════════════════════════════════════════════════════
+  ENVIRONMENT VARIABLES CHECKLIST FOR VERCEL DEPLOYMENT
+  โปรเจกต์: Student Assistance V15
+═══════════════════════════════════════════════════════════════════════════════
+
+⚠️ CRITICAL: ตัวแปรเหล่านี้ MUST มีค่า ไม่งั้นแอปจะพัง
+
+═══════════════════════════════════════════════════════════════════════════════
+FRONTEND VARIABLES (VITE_* - ต้องตั้งค่าใน Vercel)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. VITE_APP_ID
+   ├─ ที่ต้องใช้: OAuth login ของ Manus
+   ├─ ที่มา: Manus Project Settings
+   ├─ ตัวอย่าง: "app_1234567890abcdef"
+   └─ Status: [ ] ✓
+
+2. VITE_OAUTH_PORTAL_URL
+   ├─ ที่ต้องใช้: Manus OAuth portal URL
+   ├─ ที่มา: Manus Documentation
+   ├─ ค่าที่ใช้: https://api.manus.im
+   └─ Status: [ ] ✓
+
+3. VITE_FRONTEND_FORGE_API_URL
+   ├─ ที่ต้องใช้: Frontend API calls
+   ├─ ที่มา: Manus Documentation
+   ├─ ค่าที่ใช้: https://forge.manus.im
+   └─ Status: [ ] ✓
+
+4. VITE_FRONTEND_FORGE_API_KEY
+   ├─ ที่ต้องใช้: Frontend API authentication
+   ├─ ที่มา: Manus Project Settings
+   ├─ ตัวอย่าง: "pk_live_xxxxxxxxxxxxx"
+   └─ Status: [ ] ✓
+
+5. VITE_APP_TITLE (Optional)
+   ├─ ที่ต้องใช้: Page title
+   ├─ ค่าที่ใช้: "Student Assistance V15"
+   └─ Status: [ ] ✓
+
+6. VITE_APP_LOGO (Optional)
+   ├─ ที่ต้องใช้: Logo URL
+   ├─ ค่าที่ใช้: Your logo URL
+   └─ Status: [ ] ✓
+
+═══════════════════════════════════════════════════════════════════════════════
+BACKEND VARIABLES (Node.js Server - ต้องตั้งค่าใน Vercel)
+═══════════════════════════════════════════════════════════════════════════════
+
+7. DATABASE_URL
+   ├─ ที่ต้องใช้: Turso database connection
+   ├─ ที่มา: Turso Dashboard
+   ├─ รูปแบบ: libsql://xxx.turso.io?authToken=yyy
+   ├─ หลังจาก ?authToken= ต้องมี token
+   └─ Status: [ ] ✓
+
+8. TURSO_AUTH_TOKEN
+   ├─ ที่ต้องใช้: Turso authentication
+   ├─ ที่มา: Turso Dashboard
+   ├─ ตัวอย่าง: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+   └─ Status: [ ] ✓
+
+9. JWT_SECRET
+   ├─ ที่ต้องใช้: Session cookie signing
+   ├─ ที่มา: Generate yourself
+   ├─ วิธีสร้าง: openssl rand -base64 32
+   ├─ ตัวอย่าง: "abc123def456ghi789jkl012mno345pqr"
+   └─ Status: [ ] ✓
+
+10. OAUTH_SERVER_URL
+    ├─ ที่ต้องใช้: Manus OAuth server
+    ├─ ที่มา: Manus Documentation
+    ├─ ค่าที่ใช้: https://api.manus.im
+    └─ Status: [ ] ✓
+
+11. OWNER_OPEN_ID
+    ├─ ที่ต้องใช้: Project owner identification
+    ├─ ที่มา: Manus Account Settings
+    ├─ ตัวอย่าง: "user_1234567890abcdef"
+    └─ Status: [ ] ✓
+
+12. OWNER_NAME
+    ├─ ที่ต้องใช้: Project owner name
+    ├─ ที่มา: Your choice
+    ├─ ตัวอย่าง: "John Doe"
+    └─ Status: [ ] ✓
+
+13. BUILT_IN_FORGE_API_URL
+    ├─ ที่ต้องใช้: Backend API calls
+    ├─ ที่มา: Manus Documentation
+    ├─ ค่าที่ใช้: https://forge.manus.im
+    └─ Status: [ ] ✓
+
+14. BUILT_IN_FORGE_API_KEY
+    ├─ ที่ต้องใช้: Backend API authentication
+    ├─ ที่มา: Manus Project Settings
+    ├─ ตัวอย่าง: "sk_live_xxxxxxxxxxxxx"
+    └─ Status: [ ] ✓
+
+15. NODE_ENV
+    ├─ ที่ต้องใช้: Environment detection
+    ├─ ค่าที่ใช้: production
+    └─ Status: [ ] ✓
+
+═══════════════════════════════════════════════════════════════════════════════
+OPTIONAL VARIABLES (ถ้าต้องการ)
+═══════════════════════════════════════════════════════════════════════════════
+
+16. VITE_ANALYTICS_ENDPOINT (Optional)
+    ├─ ที่ต้องใช้: Analytics tracking
+    └─ Status: [ ] ✓
+
+17. VITE_ANALYTICS_WEBSITE_ID (Optional)
+    ├─ ที่ต้องใช้: Analytics website ID
+    └─ Status: [ ] ✓
+
+═══════════════════════════════════════════════════════════════════════════════
+SETUP STEPS IN VERCEL
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ไปที่ https://vercel.com/dashboard
+2. คลิก project: "student-assistance-v15-24"
+3. คลิก "Settings" tab
+4. คลิก "Environment Variables" ใน left sidebar
+5. สำหรับแต่ละตัวแปร:
+   - คลิก "Add New"
+   - ใส่ Name (เช่น VITE_APP_ID)
+   - ใส่ Value (ค่าจริง)
+   - เลือก Environments: ✓ Production, ✓ Preview, ✓ Development
+   - คลิก "Save"
+6. หลังจากเพิ่มทั้งหมด:
+   - ไปที่ "Deployments" tab
+   - คลิก latest deployment
+   - คลิก "Redeploy" button
+   - รอให้ build เสร็จ (ประมาณ 2-3 นาที)
+
+═══════════════════════════════════════════════════════════════════════════════
+VERIFICATION CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+หลังจากตั้งค่าทั้งหมด ให้เช็ค:
+
+[ ] Build สำเร็จ (ไม่มี error ใน Vercel logs)
+[ ] ไม่มี "Missing required environment variables" error
+[ ] เปิดเว็บได้ (ไม่ error 500)
+[ ] เห็นหน้า login (ครู/นักศึกษา)
+[ ] ปุ่ม "เข้าสู่ระบบ" ทำงาน (ไม่ error)
+[ ] ปุ่ม "สมัครสมาชิก" ทำงาน (ไม่ error)
+[ ] Console ไม่มี "Unexpected token" error
+[ ] Console ไม่มี "Missing VITE_" error
+
+═══════════════════════════════════════════════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════════
+
+❌ Error: "Unexpected token 'A', ... is not valid JSON"
+→ สาเหตุ: Missing environment variables
+→ แก้: เพิ่มตัวแปรทั้งหมด แล้ว Redeploy
+
+❌ Error: "Missing required environment variables"
+→ สาเหตุ: ตัวแปรบางตัวไม่ได้ set ใน Vercel
+→ แก้: ตรวจสอบรายชื่อด้านบน เพิ่มตัวที่ขาด
+
+❌ Error: "Cannot connect to database"
+→ สาเหตุ: DATABASE_URL หรือ TURSO_AUTH_TOKEN ผิด
+→ แก้: ตรวจสอบค่าใน Turso Dashboard
+
+❌ Error: "OAuth login doesn't work"
+→ สาเหตุ: VITE_APP_ID หรือ OAUTH_SERVER_URL ผิด
+→ แก้: ตรวจสอบค่าจาก Manus
+
+❌ Error: "Cannot authenticate"
+→ สาเหตุ: JWT_SECRET ขาด
+→ แก้: Generate JWT_SECRET ใหม่ด้วย: openssl rand -base64 32
+
+═══════════════════════════════════════════════════════════════════════════════
+CRITICAL REMINDERS
+═══════════════════════════════════════════════════════════════════════════════
+
+⚠️ ต้องเพิ่มตัวแปรทั้ง 14 ตัว ไม่งั้นแอปจะพัง
+⚠️ ต้องเลือก 3 environments: Production + Preview + Development
+⚠️ ต้อง Redeploy หลังจากเพิ่มตัวแปร (ไม่ auto-apply)
+⚠️ ต้องรอให้ build เสร็จ ประมาณ 2-3 นาที
+⚠️ ค่าต้องตรงกันทุกตัวอักษร (case-sensitive)
+⚠️ ไม่ต้องใส่ quote หรือ space เพิ่มเติม
+
+═══════════════════════════════════════════════════════════════════════════════
