@@ -104,7 +104,14 @@ export default function Home() {
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="text-2xl font-bold text-gray-900">สกร. V15</div>
-          <Button onClick={() => (window.location.href = getLoginUrl())}>เข้าสู่ระบบ</Button>
+          <Button onClick={() => {
+            const url = getLoginUrl();
+            if (!url) {
+              alert('ไม่สามารถเข้าสู่ระบบได้ - ตั้งค่าระบบยังไม่เสร็จสมบูรณ์');
+              return;
+            }
+            window.location.href = url;
+          }}>เข้าสู่ระบบ</Button>
         </div>
       </header>
 
@@ -138,7 +145,14 @@ export default function Home() {
 
           <Button
             size="lg"
-            onClick={() => (window.location.href = getLoginUrl())}
+            onClick={() => {
+              const url = getLoginUrl();
+              if (!url) {
+                alert('ไม่สามารถเข้าสู่ระบบได้ - ตั้งค่าระบบยังไม่เสร็จสมบูรณ์');
+                return;
+              }
+              window.location.href = url;
+            }}
             className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
             เข้าสู่ระบบ
