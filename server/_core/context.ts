@@ -1,6 +1,7 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import type { User } from "../../drizzle/schema";
 import { sdk } from "./sdk";
+import { throwIfCriticalEnvMissing } from "./env";
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
@@ -11,6 +12,10 @@ export type TrpcContext = {
 export async function createContext(
   opts: CreateExpressContextOptions
 ): Promise<TrpcContext> {
+  // Validate critical environment variables on every request
+  // This ensures we fail fast with a proper error if config is missing
+  throwIfCriticalEnvMissing("createContext");
+  
   let user: User | null = null;
 
   try {
