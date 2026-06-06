@@ -1,12 +1,10 @@
 {
   "version": 2,
-  "buildCommand": "pnpm build",
+  "buildCommand": "pnpm run build",
   "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
   "framework": "vite",
   "env": {
-    "DATABASE_URL": "@database_url",
-    "JWT_SECRET": "@jwt_secret",
     "NODE_ENV": "production"
   },
   "rewrites": [
