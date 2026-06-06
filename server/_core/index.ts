@@ -53,6 +53,24 @@ export function createApp() {
     serveStatic(app);
   }
   
+  // Global error handler - ensure all errors return JSON
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error("[Server Error]", err);
+    
+    // Don't override response if headers already sent
+    if (res.headersSent) {
+      return next(err);
+    }
+    
+    // Return JSON error response
+    res.status(err.status || 500).json({
+      error: {
+        message: err.message || "Internal Server Error",
+        status: err.status || 500,
+      },
+    });
+  });
+  
   return app;
 }
 
