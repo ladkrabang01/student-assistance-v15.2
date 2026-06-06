@@ -1,16 +1,30 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, FileText, Award, Bell, LogOut } from "lucide-react";
+import { BookOpen, FileText, Award, Bell, LogOut, Loader } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
+  const [selectedSubject, setSelectedSubject] = useState<number | null>(null);
   const logoutMutation = trpc.auth.logout.useMutation();
+
+  // Fetch student data
+  const { data: subjects, isLoading: subjectsLoading } = trpc.subjects.list.useQuery();
+  const { data: quizScores, isLoading: scoresLoading } = trpc.quizScores.getByStudent.useQuery(
+    { studentId: user?.id || 0 },
+    { enabled: !!user?.id }
+  );
+  const { data: attendance, isLoading: attendanceLoading } = trpc.attendance.getByStudent.useQuery(
+    { studentId: user?.id || 0 },
+    { enabled: !!user?.id }
+  );
+  const { data: news, isLoading: newsLoading } = trpc.news.getActive.useQuery();
 
   const handleLogout = async () => {
     try {
@@ -92,32 +106,45 @@ export default function StudentDashboard() {
                 <CardTitle>ห้องเรียนออนไลน์</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border border-slate-200 rounded-lg hover:shadow-md transition-shadow">
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      วิชาคณิตศาสตร์
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      บทเรียนและใบงานสำหรับวิชาคณิตศาสตร์
-                    </p>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <BookOpen className="w-4 h-4" />
-                      ดูรายละเอียด
-                    </Button>
+                {subjectsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader className="w-5 h-5 animate-spin text-gray-400" />
                   </div>
-                  <div className="p-4 border border-slate-200 rounded-lg hover:shadow-md transition-shadow">
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      วิชาภาษาไทย
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      บทเรียนและใบงานสำหรับวิชาภาษาไทย
-                    </p>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <BookOpen className="w-4 h-4" />
-                      ดูรายละเอียด
-                    </Button>
+                ) : subjects && subjects.length > 0 ? (
+                  <div className="space-y-4">
+                    {subjects.map((subject) => (
+                      <div
+                        key={subject.id}
+                        className="p-4 border border-slate-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => setSelectedSubject(subject.id)}
+                      >
+                        <h3 className="font-semibold text-gray-900 mb-2">
+                          {subject.name}
+                        </h3>
+                        {subject.description && (
+                          <p className="text-sm text-gray-600 mb-4">
+                            {subject.description}
+                          </p>
+                        )}
+                        {subject.youtubeLink && (
+                          <a
+                            href={subject.youtubeLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+                          >
+                            <BookOpen className="w-4 h-4" />
+                            ดูวิดีโอ
+                          </a>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    ยังไม่มีวิชาเรียน
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -129,34 +156,37 @@ export default function StudentDashboard() {
                 <CardTitle>คะแนนของฉัน</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-gray-900">
-                        คณิตศาสตร์ - ควิซที่ 1
-                      </span>
-                      <span className="text-lg font-bold text-blue-600">
-                        85/100
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      วันที่ส่ง: 5 มิถุนายน 2566
-                    </p>
+                {scoresLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader className="w-5 h-5 animate-spin text-gray-400" />
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-gray-900">
-                        ภาษาไทย - ใบงานที่ 2
-                      </span>
-                      <span className="text-lg font-bold text-green-600">
-                        92/100
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      วันที่ส่ง: 4 มิถุนายน 2566
-                    </p>
+                ) : quizScores && quizScores.length > 0 ? (
+                  <div className="space-y-4">
+                    {quizScores.map((score) => {
+                      const percentage = (score.score / score.maxScore) * 100;
+                      const color = percentage >= 80 ? "green" : percentage >= 60 ? "yellow" : "red";
+                      return (
+                        <div key={score.id} className="p-4 bg-slate-50 rounded-lg">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium text-gray-900">
+                              {score.quizName}
+                            </span>
+                            <span className={`text-lg font-bold text-${color}-600`}>
+                              {score.score}/{score.maxScore}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            วันที่: {new Date(score.quizDate).toLocaleDateString("th-TH")}
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    ยังไม่มีคะแนน
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -168,26 +198,57 @@ export default function StudentDashboard() {
                 <CardTitle>ประวัติการเช็คชื่อ</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
-                    <span className="text-gray-900">สัปดาห์ที่ 1 (มิ.ย. 1-5)</span>
-                    <span className="text-sm font-semibold text-green-600">
-                      ✓ มา 5 วัน
-                    </span>
+                {attendanceLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader className="w-5 h-5 animate-spin text-gray-400" />
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
-                    <span className="text-gray-900">สัปดาห์ที่ 2 (มิ.ย. 8-12)</span>
-                    <span className="text-sm font-semibold text-green-600">
-                      ✓ มา 4 วัน
-                    </span>
+                ) : attendance && attendance.length > 0 ? (
+                  <div className="space-y-2">
+                    {attendance.map((record) => {
+                      const bgColor =
+                        record.status === "present"
+                          ? "bg-green-50 border-green-200"
+                          : record.status === "absent"
+                          ? "bg-red-50 border-red-200"
+                          : record.status === "late"
+                          ? "bg-yellow-50 border-yellow-200"
+                          : "bg-blue-50 border-blue-200";
+                      const textColor =
+                        record.status === "present"
+                          ? "text-green-600"
+                          : record.status === "absent"
+                          ? "text-red-600"
+                          : record.status === "late"
+                          ? "text-yellow-600"
+                          : "text-blue-600";
+                      const statusLabel =
+                        record.status === "present"
+                          ? "✓ มา"
+                          : record.status === "absent"
+                          ? "✗ ขาด"
+                          : record.status === "late"
+                          ? "⚠ มาสาย"
+                          : "ลาป่วย";
+                      return (
+                        <div
+                          key={record.id}
+                          className={`flex justify-between items-center p-3 rounded-lg border ${bgColor}`}
+                        >
+                          <span className="text-gray-900">
+                            {new Date(record.attendanceDate).toLocaleDateString("th-TH")}
+                          </span>
+                          <span className={`text-sm font-semibold ${textColor}`}>
+                            {statusLabel}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <span className="text-gray-900">สัปดาห์ที่ 3 (มิ.ย. 15-19)</span>
-                    <span className="text-sm font-semibold text-yellow-600">
-                      ⚠ มา 3 วัน (ขาด 2 วัน)
-                    </span>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    ยังไม่มีบันทึกการเช็คชื่อ
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -199,30 +260,43 @@ export default function StudentDashboard() {
                 <CardTitle>ข่าวสารล่าสุด</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border border-slate-200 rounded-lg hover:shadow-md transition-shadow">
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      ประกาศปิดเทอมวันที่ 30 มิถุนายน
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-2">
-                      โรงเรียนจะปิดเทอมวันที่ 30 มิถุนายน 2566 ขอให้นักศึกษาเตรียมตัวให้พร้อม
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      วันที่ 5 มิถุนายน 2566
-                    </p>
+                {newsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader className="w-5 h-5 animate-spin text-gray-400" />
                   </div>
-                  <div className="p-4 border border-slate-200 rounded-lg hover:shadow-md transition-shadow">
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      กิจกรรมวันเด็กไทย
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-2">
-                      โรงเรียนจะจัดกิจกรรมวันเด็กไทยในวันที่ 10 มิถุนายน ที่สนามกีฬา
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      วันที่ 3 มิถุนายน 2566
-                    </p>
+                ) : news && news.length > 0 ? (
+                  <div className="space-y-4">
+                    {news.map((item) => (
+                      <div
+                        key={item.id}
+                        className="p-4 border border-slate-200 rounded-lg hover:shadow-md transition-shadow"
+                      >
+                        {item.imageUrl && (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.title}
+                            className="w-full h-40 object-cover rounded-lg mb-3"
+                          />
+                        )}
+                        <h3 className="font-semibold text-gray-900 mb-2">
+                          {item.title}
+                        </h3>
+                        {item.content && (
+                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                            {item.content}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                          วันที่ {new Date(item.publishDate).toLocaleDateString("th-TH")}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    ยังไม่มีข่าวสาร
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

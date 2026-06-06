@@ -1,26 +1,12 @@
 {
   "version": "7",
-  "dialect": "mysql",
+  "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1780668833705,
-      "tag": "0000_special_network",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1780669036698,
-      "tag": "0001_long_yellow_claw",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1780671140578,
-      "tag": "0002_dark_luckman",
+      "version": "6",
+      "when": 1780716496891,
+      "tag": "0000_spicy_khan",
       "breakpoints": true
     }
   ]
