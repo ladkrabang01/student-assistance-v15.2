@@ -9,6 +9,8 @@ import * as XLSX from "xlsx";
 
 export default function AdminDashboard() {
   const { data: stats, isLoading } = trpc.statistics.dashboard.useQuery();
+  const attendanceReportQuery = trpc.export.attendanceReport.useQuery({});
+  const scoresReportQuery = trpc.export.scoresReport.useQuery({});
   const [exporting, setExporting] = useState(false);
 
   const handleExportExcel = () => {
@@ -45,6 +47,36 @@ export default function AdminDashboard() {
       XLSX.writeFile(workbook, `สกร-รายงาน-${timestamp}.xlsx`);
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleExportAttendance = async () => {
+    try {
+      if (attendanceReportQuery.data?.csvContent) {
+        const blob = new Blob([attendanceReportQuery.data.csvContent], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = attendanceReportQuery.data.fileName || "attendance-report.csv";
+        link.click();
+      }
+    } catch (error) {
+      console.error("Export failed:", error);
+    }
+  };
+
+  const handleExportScores = async () => {
+    try {
+      if (scoresReportQuery.data?.csvContent) {
+        const blob = new Blob([scoresReportQuery.data.csvContent], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = scoresReportQuery.data.fileName || "scores-report.csv";
+        link.click();
+      }
+    } catch (error) {
+      console.error("Export failed:", error);
     }
   };
 
@@ -187,6 +219,29 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Export Reports */}
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-gray-900">ส่งออกรายงาน</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Button onClick={handleExportExcel} disabled={exporting} className="gap-2">
+                <Download className="w-4 h-4" />
+                ส่งออก Excel
+              </Button>
+              <Button onClick={handleExportAttendance} disabled={attendanceReportQuery.isLoading} variant="outline" className="gap-2">
+                <Download className="w-4 h-4" />
+                ส่งออกการเช็คชื่อ
+              </Button>
+              <Button onClick={handleExportScores} disabled={scoresReportQuery.isLoading} variant="outline" className="gap-2">
+                <Download className="w-4 h-4" />
+                ส่งออกคะแนน
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
         <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50">

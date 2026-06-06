@@ -520,6 +520,154 @@ export const appRouter = router({
       return stats;
     }),
   }),
+
+  // ============ STORAGE & UPLOADS ============
+  storage: router({
+    uploadStudentProfile: protectedProcedure
+      .input(z.object({ studentId: z.number(), imageData: z.string() }))
+      .mutation(async ({ input }) => {
+        const { storagePut } = await import("./storage");
+        const buffer = Buffer.from(input.imageData, "base64");
+        const { url, key } = await storagePut(
+          `students/${input.studentId}/profile.jpg`,
+          buffer,
+          "image/jpeg"
+        );
+        return { url, key };
+      }),
+
+    uploadHomeVisitImage: protectedProcedure
+      .input(z.object({ homeVisitId: z.number(), imageData: z.string() }))
+      .mutation(async ({ input }) => {
+        const { storagePut } = await import("./storage");
+        const buffer = Buffer.from(input.imageData, "base64");
+        const { url, key } = await storagePut(
+          `home-visits/${input.homeVisitId}/image.jpg`,
+          buffer,
+          "image/jpeg"
+        );
+        return { url, key };
+      }),
+  }),
+
+  // ============ EXPORT & REPORTS ============
+  export: router({
+    attendanceReport: adminProcedure
+      .input(z.object({ studentId: z.number().optional(), startDate: z.date().optional(), endDate: z.date().optional() }))
+      .query(async ({ input }) => {
+        const records = await db.getAttendanceByDate(input.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+        return {
+          data: records,
+          fileName: `attendance-report-${Date.now()}.csv`,
+          csvContent: convertToCsv(records)
+        };
+      }),
+
+    scoresReport: adminProcedure
+      .input(z.object({ studentId: z.number().optional() }))
+      .query(async ({ input }) => {
+        const records = input.studentId 
+          ? await db.getQuizScoresByStudent(input.studentId)
+          : await db.getAllQuizScores();
+        return {
+          data: records,
+          fileName: `scores-report-${Date.now()}.csv`,
+          csvContent: convertToCsv(records)
+        };
+      }),
+
+    moralAssessmentReport: adminProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ input }) => {
+        const records = await db.getMoralAssessmentByStudent(input.studentId);
+        return {
+          data: records,
+          fileName: `moral-assessment-${input.studentId}-${Date.now()}.csv`,
+          csvContent: convertToCsv(records)
+        };
+      }),
+  }),
+
+  // ============ REPORTS ============
+  reports: router({
+    moralAssessment: protectedProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ input }) => {
+        const records = await db.getMoralAssessmentByStudent(input.studentId);
+        return {
+          studentId: input.studentId,
+          assessments: records,
+          summary: records.length > 0 ? calculateMoralSummary(records) : null
+        };
+      }),
+
+    studentHistory: protectedProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ input }) => {
+        const student = await db.getStudentById(input.studentId);
+        const attendance = await db.getAttendanceByStudent(input.studentId);
+        const scores = await db.getQuizScoresByStudent(input.studentId);
+        const assignments = await db.getAssignmentsByStudent(input.studentId);
+        const moral = await db.getMoralAssessmentByStudent(input.studentId);
+        const homeVisits = await db.getHomeVisitsByStudent(input.studentId);
+
+        return {
+          student,
+          attendance,
+          scores,
+          assignments,
+          moral,
+          homeVisits
+        };
+      }),
+  }),
+
+  // ============ SUBMISSIONS ============
+  submissions: router({
+    listByAssignment: adminProcedure
+      .input(z.object({ assignmentId: z.number() }))
+      .query(async ({ input }) => {
+        const submissions = await db.getAssignmentSubmissionsByAssignment(input.assignmentId);
+        return submissions;
+      }),
+
+    listByStudent: protectedProcedure
+      .input(z.object({ studentId: z.number() }))
+      .query(async ({ input }) => {
+        const submissions = await db.getAssignmentsByStudent(input.studentId);
+        return submissions;
+      }),
+
+    downloadFile: protectedProcedure
+      .input(z.object({ submissionId: z.number() }))
+      .query(async ({ input }) => {
+        const submission = await db.getAssignmentSubmissionById(input.submissionId);
+        if (!submission) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Submission not found" });
+        }
+        return { url: submission.fileUrl, fileName: `submission-${input.submissionId}.pdf` }
+      }),
+  }),
 });
+
+// Helper functions
+function convertToCsv(data: any[]): string {
+  if (data.length === 0) return "";
+  const headers = Object.keys(data[0]);
+  const rows = data.map(obj => headers.map(h => JSON.stringify(obj[h])).join(","));
+  return [headers.join(","), ...rows].join("\n");
+}
+
+function calculateMoralSummary(records: any[]) {
+  const aspects = [
+    "cleanliness", "politeness", "gratitude", "diligence", "frugality",
+    "honesty", "unity", "compassion", "discipline", "patriotism", "democracy"
+  ];
+  return aspects.reduce((acc, aspect) => {
+    const values = records.map((r: any) => r[aspect]).filter(v => v !== undefined);
+    acc[aspect] = values.length > 0 ? values.reduce((a: number, b: number) => a + b, 0) / values.length : 0;
+    return acc;
+  }, {} as Record<string, number>);
+}
 
 export type AppRouter = typeof appRouter;

@@ -291,3 +291,35 @@ export async function getDashboardStats() {
     totalAssignments: totalAssignments.length,
   };
 }
+
+// ============ ADDITIONAL FUNCTIONS ============
+export async function getAssignmentsByStudent(studentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(assignments);
+}
+
+export async function getAssignmentSubmissionsByAssignment(assignmentId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(assignmentSubmissions).where(eq(assignmentSubmissions.assignmentId, assignmentId));
+}
+
+export async function getAssignmentSubmissionById(submissionId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.select().from(assignmentSubmissions).where(eq(assignmentSubmissions.id, submissionId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getAllQuizScores() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(quizScores);
+}
+
+export async function getAttendanceByDate(date: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.select().from(attendance);
+}

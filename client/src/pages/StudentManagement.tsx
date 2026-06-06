@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { Plus, Edit2, Trash2, Search } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 export default function StudentManagement() {
@@ -16,10 +16,12 @@ export default function StudentManagement() {
   const createMutation = trpc.students.create.useMutation();
   const updateMutation = trpc.students.update.useMutation();
   const deleteMutation = trpc.students.delete.useMutation();
+  const uploadProfileMutation = trpc.storage.uploadStudentProfile.useMutation();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     studentId: "",
     name: "",
@@ -42,6 +44,8 @@ export default function StudentManagement() {
     e.preventDefault();
 
     try {
+      let studentIdForUpload = editingId;
+
       if (editingId) {
         await updateMutation.mutateAsync({
           id: editingId,
@@ -50,11 +54,35 @@ export default function StudentManagement() {
         toast.success("อัปเดตข้อมูลนักศึกษาสำเร็จ");
       } else {
         await createMutation.mutateAsync(formData);
+        // Get the last created student ID from the list
+        const allStudents = await refetch();
+        if (allStudents.data && allStudents.data.length > 0) {
+          studentIdForUpload = allStudents.data[allStudents.data.length - 1].id;
+        }
         toast.success("เพิ่มนักศึกษาใหม่สำเร็จ");
+      }
+
+      // Upload profile image if provided
+      if (profileImage && studentIdForUpload) {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const base64 = event.target?.result as string;
+          try {
+            await uploadProfileMutation.mutateAsync({
+              studentId: studentIdForUpload!,
+              imageData: base64.split(",")[1] || base64,
+            });
+            toast.success("อัปโหลดรูปโปรไฟล์สำเร็จ");
+          } catch (error) {
+            toast.error("เกิดข้อผิดพลาดในการอัปโหลดรูป");
+          }
+        };
+        reader.readAsDataURL(profileImage);
       }
 
       setIsOpen(false);
       setEditingId(null);
+      setProfileImage(null);
       setFormData({
         studentId: "",
         name: "",
@@ -114,6 +142,7 @@ export default function StudentManagement() {
               <Button
                 onClick={() => {
                   setEditingId(null);
+                  setProfileImage(null);
                   setFormData({
                     studentId: "",
                     name: "",
@@ -232,11 +261,24 @@ export default function StudentManagement() {
                   />
                 </div>
 
+                <div>
+                  <Label htmlFor="profileImage">รูปโปรไฟล์</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="profileImage"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setProfileImage(e.target.files?.[0] || null)}
+                    />
+                    {profileImage && <span className="text-sm text-green-600">{profileImage.name}</span>}
+                  </div>
+                </div>
+
                 <div className="flex gap-2 justify-end">
                   <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
                     ยกเลิก
                   </Button>
-                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending || uploadProfileMutation.isPending}>
                     {editingId ? "บันทึก" : "เพิ่ม"}
                   </Button>
                 </div>

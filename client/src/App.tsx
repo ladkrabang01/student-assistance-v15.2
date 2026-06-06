@@ -18,6 +18,8 @@ import LoginStudent from "./pages/LoginStudent";
 import RegisterTeacher from "./pages/RegisterTeacher";
 import RegisterStudent from "./pages/RegisterStudent";
 import StudentDashboard from "./pages/StudentDashboard";
+import MoralAssessmentReport from "./pages/MoralAssessmentReport";
+import StudentHistory from "./pages/StudentHistory";
 import { useAuth } from "./_core/hooks/useAuth";
 
 function Router() {
@@ -48,8 +50,10 @@ function Router() {
         <Route path={"/attendance"} component={Attendance} />
         <Route path={"/classroom"} component={OnlineClassroom} />
         <Route path={"/moral"} component={MoralAssessment} />
+        <Route path={"/moral/report"} component={MoralAssessmentReport} />
         <Route path={"/news"} component={NewsManagement} />
         <Route path={"/homevisit"} component={HomeVisit} />
+        <Route path={"/history"} component={StudentHistory} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
@@ -59,8 +63,9 @@ function Router() {
   // User (student) routes
   return (
     <Switch>
-      <Route path={"/ "} component={StudentDashboard} />
+      <Route path={"/"} component={StudentDashboard} />
       <Route path={"/student"} component={StudentDashboard} />
+      <Route path={"/history"} component={StudentHistory} />
       <Route path={"/404"} component={NotFound} />
       <Route component={StudentDashboard} />
     </Switch>
