@@ -1,4 +1,3 @@
-import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -28,14 +27,15 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-async function startServer() {
+export function createApp() {
   const app = express();
-  const server = createServer(app);
+  
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  
   // tRPC API
   app.use(
     "/api/trpc",
@@ -44,12 +44,21 @@ async function startServer() {
       createContext,
     })
   );
+  
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
-    await setupVite(app, server);
+    const server = createServer(app);
+    setupVite(app, server).catch(console.error);
   } else {
     serveStatic(app);
   }
+  
+  return app;
+}
+
+async function startServer() {
+  const app = createApp();
+  const server = createServer(app);
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
@@ -63,4 +72,7 @@ async function startServer() {
   });
 }
 
-startServer().catch(console.error);
+// Only start server if not in Vercel serverless environment
+if (process.env.VERCEL !== "1") {
+  startServer().catch(console.error);
+}
